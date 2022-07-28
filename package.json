@@ -1,0 +1,26 @@
+{
+  "name": "nCube-MAV",
+  "version": "1.0.0",
+  "dependencies": {
+    "child_process": "^1.0.2",
+    "express": "^4.17.1",
+    "fs-extra": "^8.1.0",
+    "ip": "^1.1.5",
+    "jspack": "0.0.4",
+    "moment": "^2.24.0",
+    "mqtt": "^3.0.0",
+    "nanoid": "^3.1.30",
+    "serialport": "^10.4.0",
+    "shelljs": "^0.8.4",
+    "shortid": "^2.2.15",
+    "underscore": "^1.9.2"
+  },
+  "description": "&Cube:MAV",
+  "main": "thyme.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Wonseok Jung, Autonomous IoT Research Center, KETI",
+  "license": "BSD-3-Clause"
+}
