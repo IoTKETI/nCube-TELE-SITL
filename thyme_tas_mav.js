@@ -32,7 +32,7 @@ exports.ready = function tas_ready() {
         exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout, stderr) => {
             if (error) {  // Windows
                 console.log('OS is Windows');
-                mavPortNum = 'COM21';
+                mavPortNum = 'COM4';
                 mavBaudrate = '115200';
             }
             if (stdout === "raspbian\n") {  // CROW
@@ -254,13 +254,14 @@ function mavPortData(data) {
 
                 if ((mavStrFromDrone.length) >= mavLength) {
                     mavPacket = mavStrFromDrone.substr(0, mavLength);
+                    // console.log('v1', mavPacket)
 
                     if (mqtt_client !== null) {
                         mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     }
                     if (rfPort != null) {
                         if (rfPort.isOpen) {
-                            rfPort.write(mavPacket);
+                            rfPort.write(Buffer.from(mavPacket, 'hex'));
                         }
                     }
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);
@@ -277,13 +278,14 @@ function mavPortData(data) {
 
                 if (mavStrFromDrone.length >= mavLength) {
                     mavPacket = mavStrFromDrone.substr(0, mavLength);
+                    // console.log('v2', mavPacket)
 
                     if (mqtt_client !== null) {
                         mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     }
                     if (rfPort != null) {
                         if (rfPort.isOpen) {
-                            rfPort.write(mavPacket);
+                            rfPort.write(Buffer.from(mavPacket, 'hex'));
                         }
                     }
                     send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000);

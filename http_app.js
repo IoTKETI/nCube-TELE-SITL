@@ -470,7 +470,7 @@ function retrieve_my_cnt_name(callback) {
                                 info.name = container_name;
                                 conf.cnt.push(JSON.parse(JSON.stringify(info)));
 
-                                // muv_sub_msw_topic.push(info.parent + '/' + info.name);
+                                muv_sub_msw_topic.push(info.parent + '/' + info.name);
 
                                 info = {};
                                 info.parent = '/Mobius/' + drone_info.gcs + '/Mission_Data/' + drone_info.drone + '/' + mission_name + '/' + container_name;
@@ -478,7 +478,7 @@ function retrieve_my_cnt_name(callback) {
                                 conf.cnt.push(JSON.parse(JSON.stringify(info)));
                                 mission_parent.push(info.parent);
 
-                                muv_sub_msw_topic.push(info.parent + '/#');
+                                // muv_sub_msw_topic.push(info.parent + '/#');
 
                                 if (drone_info.mission[mission_name][chk_cnt][idx].split(':').length > 1) {
                                     info = {};
@@ -888,12 +888,24 @@ function muv_mqtt_connect(broker_ip, port, noti_topic, sub_gcs_topic) {
                 } else {
                     var msg_obj = JSON.parse(message.toString());
                     send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
-                    //console.log(topic + ' - ' + JSON.stringify(msg_obj));
+                    let mission_data = {}
+                    mission_data[topic] = msg_obj
+                    if (rfPort != null) {
+                        if (rfPort.isOpen) {
+                            rfPort.write(JSON.stringify(mission_data));
+                        }
+                    }
                 }
             } catch (e) {
                 msg_obj = message.toString();
                 send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
-                //console.log(topic + ' - ' + msg_obj);
+                let mission_data = {}
+                mission_data[topic] = msg_obj
+                if (rfPort != null) {
+                    if (rfPort.isOpen) {
+                        rfPort.write(JSON.stringify(mission_data));
+                    }
+                }
             }
         });
 

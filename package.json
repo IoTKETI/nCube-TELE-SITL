@@ -22,5 +22,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Wonseok Jung, Autonomous IoT Research Center, KETI",
-  "license": "BSD-3-Clause"
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "github",
+    "url": "https://github.com/dnjstjr93/nCube-MAV.git"
+  }
 }
