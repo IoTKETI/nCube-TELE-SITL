@@ -882,12 +882,11 @@ function muv_mqtt_connect(broker_ip, port, noti_topic, sub_gcs_topic) {
         });
 
         muv_mqtt_client.on('message', function (topic, message) {
-            try {
-                if (topic === sub_gcs_topic) {
-                    tas_mav.gcs_noti_handler(message);
-                } else {
+            if (topic === sub_gcs_topic) {
+                tas_mav.gcs_noti_handler(message);
+            } else {
+                try {
                     var msg_obj = JSON.parse(message.toString());
-                    send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
                     let mission_data = {}
                     mission_data[topic] = msg_obj
                     if (rfPort != null) {
@@ -895,15 +894,14 @@ function muv_mqtt_connect(broker_ip, port, noti_topic, sub_gcs_topic) {
                             rfPort.write(JSON.stringify(mission_data));
                         }
                     }
-                }
-            } catch (e) {
-                msg_obj = message.toString();
-                send_to_Mobius((topic), msg_obj, parseInt(Math.random() * 10));
-                let mission_data = {}
-                mission_data[topic] = msg_obj
-                if (rfPort != null) {
-                    if (rfPort.isOpen) {
-                        rfPort.write(JSON.stringify(mission_data));
+                } catch (e) {
+                    msg_obj = message.toString();
+                    let mission_data = {}
+                    mission_data[topic] = msg_obj
+                    if (rfPort != null) {
+                        if (rfPort.isOpen) {
+                            rfPort.write(JSON.stringify(mission_data));
+                        }
                     }
                 }
             }
@@ -913,14 +911,6 @@ function muv_mqtt_connect(broker_ip, port, noti_topic, sub_gcs_topic) {
             console.log('[muv_mqtt_client error] ' + err.message);
         });
     }
-}
-
-function send_to_Mobius(topic, content_each_obj, gap) {
-    setTimeout(function (topic, content_each_obj) {
-        sh_adn.crtci(topic + '/' + my_sortie_name + '?rcn=0', 0, content_each_obj, null, function () {
-
-        });
-    }, gap, topic, content_each_obj);
 }
 
 // function setIPandRoute(host) {

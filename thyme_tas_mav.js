@@ -259,7 +259,7 @@ function mavPortData(data) {
                     if (mqtt_client !== null) {
                         mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     }
-                    if (rfPort != null) {
+                    if (rfPort !== null) {
                         if (rfPort.isOpen) {
                             rfPort.write(Buffer.from(mavPacket, 'hex'));
                         }
@@ -283,7 +283,7 @@ function mavPortData(data) {
                     if (mqtt_client !== null) {
                         mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'));
                     }
-                    if (rfPort != null) {
+                    if (rfPort !== null) {
                         if (rfPort.isOpen) {
                             rfPort.write(Buffer.from(mavPacket, 'hex'));
                         }
@@ -415,7 +415,6 @@ function parseMavFromDrone(mavPacket) {
             // }
             if (fc.heartbeat.base_mode & 0x80) {
                 if (flag_base_mode == 3) {
-                    start_arm_time = moment();
                     flag_base_mode++;
                     my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm');
                     my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
