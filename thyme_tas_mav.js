@@ -45,6 +45,8 @@ exports.ready = function tas_ready() {
                 mavBaudrate = '115200';
             }
             mavPortOpening();
+
+            rfPortOpening()
         });
     } else {
     }
