@@ -372,10 +372,10 @@ function retrieve_my_cnt_name(callback) {
             } catch (e) {
                 console.log('can not find drone_info.json file');
                 drone_info.host = "gcs.iotocean.org"
-                drone_info.drone = "KETI_AIoT_03"
+                drone_info.drone = "drone1"
                 drone_info.gcs = "KETI_MUV"
                 drone_info.type = "ardupilot"
-                drone_info.system_id = 203
+                drone_info.system_id = 251
                 drone_info.update = "disable"
                 drone_info.rf = {}
                 drone_info.rf.drone = "/dev/ttyAMA1"
