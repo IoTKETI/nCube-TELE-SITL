@@ -3,6 +3,7 @@
  */
 
 const mqtt = require("mqtt")
+const express = require('express');
 const {nanoid} = require("nanoid")
 const fs = require("fs")
 const url = require("url");
@@ -11,14 +12,16 @@ const shell = require("shelljs");
 const http = require("http");
 const util = require("util");
 const moment = require('moment')
+const {spawn, exec} = require("child_process");
 
 let sh_adn = require('./http_adn')
-const {spawn, exec} = require("child_process");
 
 global.conf = JSON.parse(process.env.conf)
 
 let HTTP_SUBSCRIPTION_ENABLE = 0
 let MQTT_SUBSCRIPTION_ENABLE = 0
+
+let app = express()
 
 let sh_state = 'rtvct'
 
@@ -131,14 +134,14 @@ var return_count = 0;
 var request_count = 0;
 
 function ready_for_notification() {
-    if (HTTP_SUBSCRIPTION_ENABLE == 1) {
+    if (HTTP_SUBSCRIPTION_ENABLE === 1) {
         server = http.createServer(app);
         server.listen(conf.ae.port, function () {
             console.log('http_server running at ' + conf.ae.port + ' port');
         });
     }
 
-    if (MQTT_SUBSCRIPTION_ENABLE == 1) {
+    if (MQTT_SUBSCRIPTION_ENABLE === 1) {
         for (var i = 0; i < conf.sub.length; i++) {
             if (conf.sub[i].name != null) {
                 if (url.parse(conf.sub[i].nu).protocol === 'mqtt:') {
@@ -153,10 +156,10 @@ function ready_for_notification() {
                 }
             }
         }
-        mqtt_connect(conf.cse.host, muv_sub_gcs_topic, noti_topic);
+        mqtt_connect(conf.cse.host);
         setInterval(() => {
             if (mqtt_client === null) {
-                mqtt_connect(conf.cse.host, muv_sub_gcs_topic, noti_topic);
+                mqtt_connect(conf.cse.host);
             }
         }, 2000)
 
@@ -536,7 +539,7 @@ function retrieve_my_cnt_name(callback) {
             if (drone_info.hasOwnProperty('type')) {
                 my_drone_type = drone_info.type;
             } else {
-                my_drone_type = 'pixhawk';
+                my_drone_type = 'ardupilot';
             }
 
             var drone_type = {};
@@ -600,7 +603,7 @@ function retrieve_my_cnt_name(callback) {
             my_command_name = my_command_parent_name + '/' + info.name;
 
             MQTT_SUBSCRIPTION_ENABLE = 1;
-            sh_state = 'crtae';
+            sh_state = 'crtct';
             setTimeout(http_watchdog, normal_interval);
 
             drone_info.id = conf.ae.name;
@@ -770,9 +773,9 @@ function mqtt_connect(serverip) {
         mqtt_client = mqtt.connect(connectOptions)
 
         mqtt_client.on('connect', function () {
-            console.log('mqtt is connected')
+            console.log('mqtt is connected to (' + serverip + ')')
 
-            if (my_command_name != '') {
+            if (my_command_name !== '') {  // GCS topic
                 mqtt_client.subscribe(my_command_name, function () {
                     console.log('[mqtt_connect] my_command_name is subscribed: ' + my_command_name);
                 });

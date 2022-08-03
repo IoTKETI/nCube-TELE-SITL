@@ -110,7 +110,6 @@ function local_mqtt_connect(serverip) {
                     console.log('[local_mqtt] sub_gcs_lte_topic is subscribed: ' + sub_gcs_lte_topic)
                 })
             }
-            // TODO: subscribe mission topic for MSW
         })
 
         local_mqtt_client.on('message', function (topic, message) {
