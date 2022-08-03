@@ -54,7 +54,7 @@ function tas_ready() {
 }
 
 function gcs_noti_handler(message) {
-    console.log('[GCS]', message)
+    // console.log('[GCS]', message)
 
     if (mavPort !== null) {
         if (mavPort.isOpen) {
