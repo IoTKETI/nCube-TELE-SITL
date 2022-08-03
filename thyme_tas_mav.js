@@ -54,6 +54,8 @@ function tas_ready() {
 }
 
 function gcs_noti_handler(message) {
+    console.log('[GCS]', message)
+
     if (mavPort !== null) {
         if (mavPort.isOpen) {
             mavPort.write(Buffer.from(message, 'hex'))
@@ -113,6 +115,7 @@ function local_mqtt_connect(serverip) {
         })
 
         local_mqtt_client.on('message', function (topic, message) {
+            // TODO: GCS 데이터 중복 제거... 시퀀스가 0....
             if (topic === sub_gcs_rf_topic) {
                 let gcsData = message.toString('hex')
                 if (gcsData.substring(0, 2) === 'fe') {
@@ -122,6 +125,7 @@ function local_mqtt_connect(serverip) {
                     let sequence = parseInt(gcsData.substring(8, 10), 16)
                     GCSData[sequence] = gcsData
                 }
+                // console.log('[RF]', gcsData)
                 gcs_noti_handler(gcsData)
             } else if (topic === sub_gcs_lte_topic) {
                 let gcsData = message.toString('hex')
@@ -138,6 +142,7 @@ function local_mqtt_connect(serverip) {
                         return
                     }
                 }
+                // console.log('[LTE]', gcsData)
                 gcs_noti_handler(gcsData)
             }
         })
@@ -316,15 +321,15 @@ function parseMavFromDrone(mavPacket) {
         }
 
         if (msg_id === mavlink.MAVLINK_MSG_ID_GLOBAL_POSITION_INT) { // #33
-            var time_boot_ms = mavPacket.substr(base_offset, 8).toLowerCase()
+            var time_boot_ms = mavPacket.substring(base_offset, base_offset + 8).toLowerCase()
             base_offset += 8
-            var lat = mavPacket.substr(base_offset, 8).toLowerCase()
+            var lat = mavPacket.substring(base_offset, base_offset + 8).toLowerCase()
             base_offset += 8
-            var lon = mavPacket.substr(base_offset, 8).toLowerCase()
+            var lon = mavPacket.substring(base_offset, base_offset + 8).toLowerCase()
             base_offset += 8
-            var alt = mavPacket.substr(base_offset, 8).toLowerCase()
+            var alt = mavPacket.substring(base_offset, base_offset + 8).toLowerCase()
             base_offset += 8
-            var relative_alt = mavPacket.substr(base_offset, 8).toLowerCase()
+            var relative_alt = mavPacket.substring(base_offset, base_offset + 8).toLowerCase()
 
             fc.global_position_int = {}
             fc.global_position_int.time_boot_ms = Buffer.from(time_boot_ms, 'hex').readUInt32LE(0)
@@ -335,17 +340,17 @@ function parseMavFromDrone(mavPacket) {
 
             local_mqtt_client.publish(pub_parse_global_position_int, JSON.stringify(fc.global_position_int))
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
-            var custom_mode = mavPacket.substr(base_offset, 8).toLowerCase()
+            var custom_mode = mavPacket.substring(base_offset, base_offset + 8).toLowerCase()
             base_offset += 8
-            var type = mavPacket.substr(base_offset, 2).toLowerCase()
+            var type = mavPacket.substring(base_offset, base_offset + 2).toLowerCase()
             base_offset += 2
-            var autopilot = mavPacket.substr(base_offset, 2).toLowerCase()
+            var autopilot = mavPacket.substring(base_offset, base_offset + 2).toLowerCase()
             base_offset += 2
-            var base_mode = mavPacket.substr(base_offset, 2).toLowerCase()
+            var base_mode = mavPacket.substring(base_offset, base_offset + 2).toLowerCase()
             base_offset += 2
-            var system_status = mavPacket.substr(base_offset, 2).toLowerCase()
+            var system_status = mavPacket.substring(base_offset, base_offset + 2).toLowerCase()
             base_offset += 2
-            var mavlink_version = mavPacket.substr(base_offset, 2).toLowerCase()
+            var mavlink_version = mavPacket.substring(base_offset, base_offset + 2).toLowerCase()
 
             fc.heartbeat = {}
             fc.heartbeat.type = Buffer.from(type, 'hex').readUInt8(0)
@@ -375,15 +380,15 @@ function parseMavFromDrone(mavPacket) {
                 local_mqtt_client.publish(pub_sortie_topic, my_sortie_name)
             }
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_PARAM_VALUE) {
-            let param_value = mavPacket.substr(base_offset, 8).toLowerCase()
+            let param_value = mavPacket.substring(base_offset, base_offset + 8).toLowerCase()
             base_offset += 8
-            let param_count = mavPacket.substr(base_offset, 4).toLowerCase()
+            let param_count = mavPacket.substring(base_offset, base_offset + 4).toLowerCase()
             base_offset += 4
-            let param_index = mavPacket.substr(base_offset, 4).toLowerCase()
+            let param_index = mavPacket.substring(base_offset, base_offset + 4).toLowerCase()
             base_offset += 4
-            let param_id = mavPacket.substr(base_offset, 32).toLowerCase()
+            let param_id = mavPacket.substring(base_offset, base_offset + 32).toLowerCase()
             base_offset += 32
-            let param_type = mavPacket.substr(base_offset, 2).toLowerCase()
+            let param_type = mavPacket.substring(base_offset, base_offset + 2).toLowerCase()
 
             fc.wp_yaw_behavior = {}
             fc.wp_yaw_behavior.id = Buffer.from(param_id, "hex").toString('ASCII').toLowerCase()

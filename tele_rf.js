@@ -8,11 +8,9 @@ const fs = require("fs")
 
 let conf = JSON.parse(process.env.conf)
 
-
-
 let rfPort = null
-var rfPortNum = '/dev/ttyAMA1'
-// var rfPortNum = 'COM1'
+// var rfPortNum = '/dev/ttyAMA1'
+var rfPortNum = 'COM2'
 var rfBaudrate = '115200'
 
 let local_mqtt_client = null
@@ -91,8 +89,104 @@ function rfPortError(error) {
     setTimeout(rfPortOpening, 2000)
 }
 
+var mavStrFromDrone = ''
+var mavStrFromDroneLength = 0
+var mavVersion = 'unknown'
+var mavVersionCheckFlag = false
+
 function rfPortData(data) {  // GCS 데이터 로컬 MQTT로 전달
-    local_mqtt_client.publish(pub_gcs_topic, data)
+    mavStrFromDrone += data.toString('hex').toLowerCase()
+
+    while (mavStrFromDrone.length > 20) {
+        if (!mavVersionCheckFlag) {
+            let stx = mavStrFromDrone.substring(0, 2)
+            if (stx === 'fe') {
+                var len = parseInt(mavStrFromDrone.substring(2, 4), 16)
+                var mavLength = (6 * 2) + (len * 2) + (2 * 2)
+                var sysid = parseInt(mavStrFromDrone.substring(6, 8), 16)
+                var msgid = parseInt(mavStrFromDrone.substring(10, 12), 16)
+
+                if (msgid === 0 && len === 9) { // HEARTBEAT
+                    mavVersionCheckFlag = true
+                    mavVersion = 'v1'
+                }
+
+                if ((mavStrFromDrone.length) >= mavLength) {
+                    var mavPacket = mavStrFromDrone.substring(0, mavLength)
+
+                    if (local_mqtt_client !== null) {
+                        local_mqtt_client.publish(pub_gcs_topic, Buffer.from(mavPacket, 'hex'))
+                    }
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDroneLength = 0
+                } else {
+                    break
+                }
+            } else if (stx === 'fd') {
+                len = parseInt(mavStrFromDrone.substring(2, 4), 16)
+                mavLength = (10 * 2) + (len * 2) + (2 * 2)
+
+                sysid = parseInt(mavStrFromDrone.substring(10, 12), 16)
+                msgid = parseInt(mavStrFromDrone.substring(18, 20) + mavStrFromDrone.substring(16, 18) + mavStrFromDrone.substring(14, 16), 16)
+
+                if (msgid === 0 && len === 9) { // HEARTBEAT
+                    mavVersionCheckFlag = true
+                    mavVersion = 'v2'
+                }
+                if (mavStrFromDrone.length >= mavLength) {
+                    mavPacket = mavStrFromDrone.substring(0, mavLength)
+
+                    if (local_mqtt_client !== null) {
+                        local_mqtt_client.publish(pub_gcs_topic, Buffer.from(mavPacket, 'hex'))
+                    }
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDroneLength = 0
+                } else {
+                    break
+                }
+            } else {
+                mavStrFromDrone = mavStrFromDrone.substring(2, mavStrFromDrone.length)
+            }
+        } else {
+            let stx = mavStrFromDrone.substring(0, 2)
+            if (mavVersion === 'v1' && stx === 'fe') {
+                len = parseInt(mavStrFromDrone.substring(2, 4), 16)
+                mavLength = (6 * 2) + (len * 2) + (2 * 2)
+
+                if ((mavStrFromDrone.length) >= mavLength) {
+                    mavPacket = mavStrFromDrone.substring(0, mavLength)
+                    // console.log('v1', mavPacket)
+
+                    if (local_mqtt_client !== null) {
+                        local_mqtt_client.publish(pub_gcs_topic, Buffer.from(mavPacket, 'hex'))
+                    }
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDroneLength = 0
+                } else {
+                    break
+                }
+            } else if (mavVersion === 'v2' && stx === 'fd') {
+                len = parseInt(mavStrFromDrone.substring(2, 4), 16)
+                mavLength = (10 * 2) + (len * 2) + (2 * 2)
+
+                if (mavStrFromDrone.length >= mavLength) {
+                    mavPacket = mavStrFromDrone.substring(0, mavLength)
+                    // console.log('v2', mavPacket)
+
+                    if (local_mqtt_client !== null) {
+                        local_mqtt_client.publish(pub_gcs_topic, Buffer.from(mavPacket, 'hex'))
+                    }
+
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDroneLength = 0
+                } else {
+                    break
+                }
+            } else {
+                mavStrFromDrone = mavStrFromDrone.substring(2, mavStrFromDrone.length)
+            }
+        }
+    }
 }
 
 function local_mqtt_connect(serverip) {
