@@ -28,7 +28,7 @@ let pub_parse_wp_yaw_behavior = '/TELE/drone/wp_yaw_behavior'
 
 let my_sortie_name = 'disarm'
 
-let GCSData = {};
+let GCSData = {}
 
 tas_ready()
 
@@ -37,7 +37,7 @@ function tas_ready() {
     exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout) => {
         if (error) {  // Windows
             console.log('OS is Windows')
-            mavPortNum = 'COM4'
+            mavPortNum = 'COM21'
             mavBaudrate = '115200'
         }
         if (stdout === "raspbian\n") {  // CROW
@@ -363,9 +363,6 @@ function parseMavFromDrone(mavPacket) {
                     flag_base_mode++
                     my_sortie_name = moment().format('YYYY_MM_DD_T_HH_mm')
                     local_mqtt_client.publish(pub_sortie_topic, my_sortie_name)
-                    // my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name
-                    // sh_adn.crtct(my_parent_cnt_name + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
-                    // })
                 } else {
                     flag_base_mode++
                     if (flag_base_mode > 16) {
@@ -377,8 +374,6 @@ function parseMavFromDrone(mavPacket) {
 
                 my_sortie_name = 'disarm'
                 local_mqtt_client.publish(pub_sortie_topic, my_sortie_name)
-                // my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name
-                // my_gimbal_name = my_gimbal_parent + '/' + my_sortie_name
             }
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_PARAM_VALUE) {
             let param_value = mavPacket.substr(base_offset, 8).toLowerCase()

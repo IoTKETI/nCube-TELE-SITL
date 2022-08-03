@@ -4,10 +4,15 @@
 const {SerialPort} = require('serialport')
 const mqtt = require("mqtt")
 const {nanoid} = require("nanoid")
-const fs = require("fs");
+const fs = require("fs")
+
+let conf = JSON.parse(process.env.conf)
+
+
 
 let rfPort = null
-var rfPortNum = '/dev/ttyAMA1'
+// var rfPortNum = '/dev/ttyAMA1'
+var rfPortNum = 'COM1'
 var rfBaudrate = '115200'
 
 let local_mqtt_client = null
@@ -16,7 +21,38 @@ let pub_gcs_topic = '/TELE/gcs/rf'
 let sub_drone_topic = '/TELE/drone'
 let sub_sortie_topic = '/TELE/sorite'
 
-rfPortOpening()
+let my_sortie_name = 'disarm'
+
+init()
+
+function init() {
+    let drone_info = {}
+    try {
+        drone_info = JSON.parse(fs.readFileSync('drone_info.json', 'utf8'))
+    } catch (e) {
+        console.log('can not find drone_info.json file')
+        drone_info.host = "gcs.iotocean.org"
+        drone_info.drone = "drone1"
+        drone_info.gcs = "KETI_MUV"
+        drone_info.type = "ardupilot"
+        drone_info.system_id = 251
+        drone_info.update = "disable"
+        drone_info.rf = {}
+        drone_info.rf.drone = "/dev/ttyAMA1"
+        drone_info.rf.rc = "/dev/ttyAMA2"
+        drone_info.mission = {}
+        drone_info.mission["msw_lgu_lte"] = {}
+        drone_info.mission["msw_lgu_lte"].container = ['LTE']
+        drone_info.mission["msw_lgu_lte"].sub_container = []
+        drone_info.mission["msw_lgu_lte"].git = "https://github.com/IoTKETI/msw_lgu_lte.git"
+        drone_info.id = conf.ae.name
+        fs.writeFileSync('drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8')
+    }
+    // TODO: MSW 실행하도록... git clone이나 git pull은 제외, npm install도 제외 단순히 실행만하도록
+    // setTimeout(fork_msw, 10, mission_name, directory_name)
+
+    rfPortOpening()
+}
 
 function rfPortOpening() {
     if (rfPort === null) {
@@ -55,9 +91,7 @@ function rfPortError(error) {
     setTimeout(rfPortOpening, 2000)
 }
 
-function rfPortData(data) {
-    // TODO: RF 데이터(GCS) 받아서 로컬로 패스
-    console.log(data)
+function rfPortData(data) {  // GCS 데이터 로컬 MQTT로 전달
     local_mqtt_client.publish(pub_gcs_topic, data)
 }
 
@@ -116,11 +150,9 @@ function local_mqtt_connect(serverip) {
             if (topic === sub_sortie_topic) {
                 my_sortie_name = message.toString()
             } else if (topic === sub_drone_topic) {
-                if (mqtt_client !== null) {
-                    if (my_cnt_name !== '') {
-                        // console.log(message.toString())
-                        mqtt_client.publish(my_cnt_name, Buffer.from(message.toString(), 'hex'))
-                        send_aggr_to_Mobius(my_cnt_name, message.toString(), 2000)
+                if (rfPort !== null) {
+                    if (rfPort.isOpen) {
+                        rfPort.write(Buffer.from(message.toString(), 'hex'))
                     }
                 }
             }

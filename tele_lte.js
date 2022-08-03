@@ -254,7 +254,7 @@ function npm_install(mission_name, directory_name) {
         npmInstall.on('exit', function (code) {
             console.log('exit: ' + code);
 
-            setTimeout(fork_msw, 10, mission_name, directory_name);
+            setTimeout(fork_msw, 10, mission_name, directory_name)
         });
 
         npmInstall.on('error', function (code) {
