@@ -6,7 +6,6 @@ const mqtt = require("mqtt")
 const {nanoid} = require("nanoid")
 const fs = require("fs")
 const url = require("url");
-const ip = require("ip");
 const shortid = require("shortid");
 const shell = require("shelljs");
 const http = require("http");
