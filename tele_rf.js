@@ -9,8 +9,8 @@ const fs = require("fs")
 let conf = JSON.parse(process.env.conf)
 
 let rfPort = null
-// var rfPortNum = '/dev/ttyAMA1'
-var rfPortNum = 'COM1'
+var rfPortNum = '/dev/ttyAMA1'
+// var rfPortNum = 'COM1'
 var rfBaudrate = '115200'
 
 let local_mqtt_client = null
