@@ -117,7 +117,7 @@ function rfPortData(data) {  // GCS 데이터 로컬 MQTT로 전달
                     if (local_mqtt_client !== null) {
                         local_mqtt_client.publish(pub_gcs_topic, Buffer.from(mavPacket, 'hex'))
                     }
-                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength)
                     mavStrFromDroneLength = 0
                 } else {
                     break
@@ -139,13 +139,13 @@ function rfPortData(data) {  // GCS 데이터 로컬 MQTT로 전달
                     if (local_mqtt_client !== null) {
                         local_mqtt_client.publish(pub_gcs_topic, Buffer.from(mavPacket, 'hex'))
                     }
-                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength)
                     mavStrFromDroneLength = 0
                 } else {
                     break
                 }
             } else {
-                mavStrFromDrone = mavStrFromDrone.substring(2, mavStrFromDrone.length)
+                mavStrFromDrone = mavStrFromDrone.substring(2)
             }
         } else {
             let stx = mavStrFromDrone.substring(0, 2)
@@ -160,7 +160,7 @@ function rfPortData(data) {  // GCS 데이터 로컬 MQTT로 전달
                     if (local_mqtt_client !== null) {
                         local_mqtt_client.publish(pub_gcs_topic, Buffer.from(mavPacket, 'hex'))
                     }
-                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength)
                     mavStrFromDroneLength = 0
                 } else {
                     break
@@ -177,13 +177,13 @@ function rfPortData(data) {  // GCS 데이터 로컬 MQTT로 전달
                         local_mqtt_client.publish(pub_gcs_topic, Buffer.from(mavPacket, 'hex'))
                     }
 
-                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength)
                     mavStrFromDroneLength = 0
                 } else {
                     break
                 }
             } else {
-                mavStrFromDrone = mavStrFromDrone.substring(2, mavStrFromDrone.length)
+                mavStrFromDrone = mavStrFromDrone.substring(2)
             }
         }
     }

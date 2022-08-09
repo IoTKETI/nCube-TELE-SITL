@@ -136,7 +136,7 @@ function gimbalPortData(data) {
             }
 
         } else {
-            strFromGimbal = strFromGimbal.substr(2);
+            strFromGimbal = strFromGimbal.substring(2);
         }
     }
 }

@@ -212,7 +212,7 @@ function mavPortData(data) {
                 if ((mavStrFromDrone.length) >= mavLength) {
                     var mavPacket = mavStrFromDrone.substring(0, mavLength)
 
-                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavLength.length)
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength)
                     mavStrFromDroneLength = 0
                 } else {
                     break
@@ -231,13 +231,13 @@ function mavPortData(data) {
                 if (mavStrFromDrone.length >= mavLength) {
                     mavPacket = mavStrFromDrone.substring(0, mavLength)
 
-                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavLength.length)
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength)
                     mavStrFromDroneLength = 0
                 } else {
                     break
                 }
             } else {
-                mavStrFromDrone = mavStrFromDrone.substring(2, mavStrFromDrone.length)
+                mavStrFromDrone = mavStrFromDrone.substring(2)
             }
         } else {
             stx = mavStrFromDrone.substring(0, 2)
@@ -263,7 +263,7 @@ function mavPortData(data) {
                     // send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000)
                     setTimeout(parseMavFromDrone, 0, mavPacket)
 
-                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength)
                     mavStrFromDroneLength = 0
                 } else {
                     break
@@ -290,13 +290,13 @@ function mavPortData(data) {
                     // send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000)
                     setTimeout(parseMavFromDrone, 0, mavPacket)
 
-                    mavStrFromDrone = mavStrFromDrone.substring(mavLength, mavStrFromDrone.length)
+                    mavStrFromDrone = mavStrFromDrone.substring(mavLength)
                     mavStrFromDroneLength = 0
                 } else {
                     break
                 }
             } else {
-                mavStrFromDrone = mavStrFromDrone.substring(2, mavStrFromDrone.length)
+                mavStrFromDrone = mavStrFromDrone.substring(2)
             }
         }
     }
