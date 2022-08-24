@@ -1,5 +1,5 @@
 {
-  "name": "nCube-MAV",
+  "name": "nCube-TELE",
   "version": "1.0.0",
   "dependencies": {
     "concurrently": "^7.3.0",
