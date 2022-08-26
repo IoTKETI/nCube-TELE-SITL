@@ -300,7 +300,7 @@ function mavPortData(data) {
 
                 if ((mavStrFromDrone.length) >= mavLength) {
                     mavPacket = mavStrFromDrone.substring(0, mavLength)
-                    console.log('v1', mavPacket)
+                    // console.log('v1', mavPacket)
 
                     if (local_mqtt_client !== null) {
                         local_mqtt_client.publish(pub_drone_topic, mavPacket)
@@ -327,7 +327,7 @@ function mavPortData(data) {
 
                 if (mavStrFromDrone.length >= mavLength) {
                     mavPacket = mavStrFromDrone.substring(0, mavLength)
-                    console.log('v2', mavPacket)
+                    // console.log('v2', mavPacket)
 
                     if (local_mqtt_client !== null) {
                         local_mqtt_client.publish(pub_drone_topic, mavPacket)
