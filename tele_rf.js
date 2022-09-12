@@ -5,12 +5,12 @@ const {SerialPort} = require('serialport')
 const mqtt = require("mqtt")
 const {nanoid} = require("nanoid")
 const fs = require("fs")
+const {exec, spawn} = require("child_process");
 
 let conf = JSON.parse(process.env.conf)
 
 let rfPort = null
 var rfPortNum = '/dev/ttyAMA1'
-// var rfPortNum = 'COM1'
 var rfBaudrate = '115200'
 
 let local_mqtt_client = null
@@ -21,10 +21,11 @@ let sub_sortie_topic = '/TELE/sorite'
 
 let my_sortie_name = 'disarm'
 
-init()
+setTimeout(init, 2000)
 
 function init() {
     let drone_info = {}
+    // TODO: LTE 없어서 drone_info 업데이트 안되는 경우
     try {
         drone_info = JSON.parse(fs.readFileSync('drone_info.json', 'utf8'))
     } catch (e) {
@@ -39,17 +40,96 @@ function init() {
         drone_info.rf.drone = "/dev/ttyAMA1"
         drone_info.rf.rc = "/dev/ttyAMA2"
         drone_info.mission = {}
-        drone_info.mission["msw_lgu_lte"] = {}
-        drone_info.mission["msw_lgu_lte"].container = ['LTE']
-        drone_info.mission["msw_lgu_lte"].sub_container = []
-        drone_info.mission["msw_lgu_lte"].git = "https://github.com/IoTKETI/msw_lgu_lte.git"
         drone_info.id = conf.ae.name
         fs.writeFileSync('drone_info.json', JSON.stringify(drone_info, null, 4), 'utf8')
     }
-    // TODO: MSW 실행하도록... git clone이나 git pull은 제외, npm install도 제외 단순히 실행만하도록
-    // setTimeout(fork_msw, 10, mission_name, directory_name)
 
-    rfPortOpening()
+    try {  // run default mission of lte
+        if (fs.existsSync('./msw_lte_msw_lte')) {
+            setTimeout(fork_msw, 10, 'msw_lte', 'msw_lte_msw_lte');
+        }
+    } catch (e) {
+        console.log(e.message);
+    }
+    // TODO: 데이터 송수신용 RF serial 포트 하나 더 오픈?
+    if (drone_info.hasOwnProperty('mission')) {
+        for (var mission_name in drone_info.mission) {
+            if (drone_info.mission.hasOwnProperty(mission_name)) {
+                let chk_cnt = 'git'
+                if (drone_info.mission[mission_name].hasOwnProperty(chk_cnt)) {
+                    try {
+                        var repo_arr = drone_info.mission[mission_name][chk_cnt].split('/');
+                        var directory_name = mission_name + '_' + repo_arr[repo_arr.length - 1].replace('.git', '');
+
+                        if (fs.existsSync('./' + directory_name)) {
+                            setTimeout(fork_msw, 10, mission_name, directory_name);
+                        }
+                    } catch (e) {
+                        console.log(e.message);
+                    }
+                }
+            }
+        }
+    }
+    setTimeout(rfPortOpening, parseInt(Math.random() * 5));
+}
+
+function npm_install(mission_name, directory_name) {
+    try {
+        if (process.platform === 'win32') {
+            var cmd = 'npm.cmd'
+        } else {
+            cmd = 'npm'
+        }
+
+        var npmInstall = spawn(cmd, ['install'], {cwd: process.cwd() + '/' + directory_name});
+
+        npmInstall.stdout.on('data', function (data) {
+            console.log('stdout: ' + data);
+        });
+
+        npmInstall.stderr.on('data', function (data) {
+            console.log('stderr: ' + data);
+        });
+
+        npmInstall.on('exit', function (code) {
+            console.log('exit: ' + code);
+
+            setTimeout(fork_msw, 10, mission_name, directory_name)
+        });
+
+        npmInstall.on('error', function (code) {
+            console.log('error: ' + code);
+
+            setTimeout(npm_install, 10, mission_name, directory_name);
+        });
+    } catch (e) {
+        console.log(e.message);
+    }
+}
+
+function fork_msw(mission_name, directory_name) {
+    var executable_name = directory_name.replace(mission_name + '_', '');
+
+    var nodeMsw = exec('sh ' + executable_name + '.sh', {cwd: process.cwd() + '/' + directory_name});
+
+    nodeMsw.stdout.on('data', function (data) {
+        console.log('stdout: ' + data);
+    });
+
+    nodeMsw.stderr.on('data', function (data) {
+        console.log('stderr: ' + data);
+    });
+
+    nodeMsw.on('exit', function (code) {
+        console.log('exit: ' + code);
+    });
+
+    nodeMsw.on('error', function (code) {
+        console.log('error: ' + code);
+
+        setTimeout(npm_install, 10, directory_name);
+    });
 }
 
 function rfPortOpening() {
@@ -197,7 +277,7 @@ function local_mqtt_connect(serverip) {
                 port: conf.cse.mqttport,
                 protocol: "mqtt",
                 keepalive: 10,
-                clientId: 'TAS_MAV_' + nanoid(15),
+                clientId: 'TELE_RF_' + nanoid(15),
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -211,7 +291,7 @@ function local_mqtt_connect(serverip) {
                 port: conf.cse.mqttport,
                 protocol: "mqtts",
                 keepalive: 10,
-                clientId: 'TAS_MAV_' + nanoid(15),
+                clientId: 'TELE_RF_' + nanoid(15),
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,

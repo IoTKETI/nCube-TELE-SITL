@@ -26,6 +26,8 @@ let pub_parse_global_position_int = '/TELE/drone/gpi'
 let pub_parse_heartbeat = '/TELE/drone/hb'
 let pub_parse_wp_yaw_behavior = '/TELE/drone/wp_yaw_behavior'
 let pub_parse_distance_sensor = '/TELE/drone/distance_sensor'
+let pub_parse_timesync = '/TELE/drone/timesync'
+let pub_parse_system_time = '/TELE/drone/system_time'
 
 let my_sortie_name = 'disarm'
 
@@ -54,6 +56,8 @@ function tas_ready() {
     })
 }
 
+let control = {};
+
 function gcs_noti_handler(message) {
     // console.log('[GCS]', message)
     var ver = message.substring(0, 2)
@@ -65,48 +69,60 @@ function gcs_noti_handler(message) {
         base_offset = 12
     }
 
-    if (msg_id === mavlink.MAVLINK_MSG_ID_COMMAND_LONG) { // #33
+    if (msg_id === mavlink.MAVLINK_MSG_ID_COMMAND_LONG) {
         console.log('[send_reserved_control_command]', message)
 
-        var param1 = Buffer.from(message.substring(base_offset, base_offset + 8).toLowerCase(), 'hex').readFloatLE(0);
+        var param1 = message.substring(base_offset, base_offset + 8).toLowerCase();
         base_offset += 8;
-        var param2 = Buffer.from(message.substring(base_offset, base_offset + 8).toLowerCase(), 'hex').readFloatLE(0);
+        var param2 = message.substring(base_offset, base_offset + 8).toLowerCase();
         base_offset += 8;
-        var param3 = Buffer.from(message.substring(base_offset, base_offset + 8).toLowerCase(), 'hex').readFloatLE(0);
+        var param3 = message.substring(base_offset, base_offset + 8).toLowerCase();
         base_offset += 8;
-        var param4 = Buffer.from(message.substring(base_offset, base_offset + 8).toLowerCase(), 'hex').readFloatLE(0);
+        var param4 = message.substring(base_offset, base_offset + 8).toLowerCase();
         base_offset += 8;
-        var param5 = Buffer.from(message.substring(base_offset, base_offset + 8).toLowerCase(), 'hex').readFloatLE(0);
+        var param5 = message.substring(base_offset, base_offset + 8).toLowerCase();
         base_offset += 8;
-        var param6 = Buffer.from(message.substring(base_offset, base_offset + 8).toLowerCase(), 'hex').readFloatLE(0);
+        var param6 = message.substring(base_offset, base_offset + 8).toLowerCase();
         base_offset += 8;
-        var param7 = Buffer.from(message.substring(base_offset, base_offset + 8).toLowerCase(), 'hex').readFloatLE(0);
+        var param7 = message.substring(base_offset, base_offset + 8).toLowerCase();
         base_offset += 8;
-        var command = Buffer.from(message.substring(base_offset, base_offset + 4).toLowerCase(), 'hex').readUInt16LE(0);
+        var command = message.substring(base_offset, base_offset + 4).toLowerCase();
         base_offset += 4;
-        var target_system = Buffer.from(message.substring(base_offset, base_offset + 2).toLowerCase(), 'hex').readUInt8(0);
+        var target_system = message.substring(base_offset, base_offset + 2).toLowerCase();
         base_offset += 2;
-        var target_component = Buffer.from(message.substring(base_offset, base_offset + 2).toLowerCase(), 'hex').readUInt8(0);
+        var target_component = message.substring(base_offset, base_offset + 2).toLowerCase();
         base_offset += 2;
-        var confirmation = Buffer.from(message.substring(base_offset, base_offset + 2).toLowerCase(), 'hex').readUInt8(0);
+        var confirmation = message.substring(base_offset, base_offset + 2).toLowerCase();
+
+        control.param1 = Buffer.from(param1, 'hex').readFloatLE(0);
+        control.param2 = Buffer.from(param2, 'hex').readFloatLE(0);
+        control.param3 = Buffer.from(param3, 'hex').readFloatLE(0);
+        control.param4 = Buffer.from(param4, 'hex').readFloatLE(0);
+        control.param5 = Buffer.from(param5, 'hex').readFloatLE(0);
+        control.param6 = Buffer.from(param6, 'hex').readFloatLE(0);
+        control.param7 = Buffer.from(param7, 'hex').readFloatLE(0);
+        control.command = Buffer.from(command, 'hex').readUInt16LE(0);
+        control.target_system = Buffer.from(target_system, 'hex').readUInt8(0);
+        control.target_component = Buffer.from(target_component, 'hex').readUInt8(0);
+        control.confirmation = Buffer.from(confirmation, 'hex').readUInt8(0);
 
         let control_channels = {}
-        control_channels.channel = param1
-        control_channels.value = param2
+        control_channels.channel = control.param1
+        control_channels.value = control.param2
 
         local_mqtt_client.publish('/Control', JSON.stringify(control_channels))
         console.log('============================================================')
-        console.log('target_system - ' + target_system)
-        console.log('target_component - ' + target_component)
-        console.log('command - ' + command)
-        console.log('confirmation - ' + confirmation)
-        console.log('param1 - ' + param1)
-        console.log('param2 - ' + param2)
-        console.log('param3 - ' + param3)
-        console.log('param4 - ' + param4)
-        console.log('param5 - ' + param5)
-        console.log('param6 - ' + param6)
-        console.log('param7 - ' + param7)
+        console.log('target_system - ' + control.target_system)
+        console.log('target_component - ' + control.target_component)
+        console.log('command - ' + control.command)
+        console.log('confirmation - ' + control.confirmation)
+        console.log('param1 - ' + control.param1)
+        console.log('param2 - ' + control.param2)
+        console.log('param3 - ' + control.param3)
+        console.log('param4 - ' + control.param4)
+        console.log('param5 - ' + control.param5)
+        console.log('param6 - ' + control.param6)
+        console.log('param7 - ' + control.param7)
         console.log('============================================================')
     } else {
         if (mavPort !== null) {
@@ -125,7 +141,7 @@ function local_mqtt_connect(serverip) {
                 port: conf.cse.mqttport,
                 protocol: "mqtt",
                 keepalive: 10,
-                clientId: 'TAS_MAV_' + nanoid(15),
+                clientId: 'TELE_MAV_' + nanoid(15),
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -139,7 +155,7 @@ function local_mqtt_connect(serverip) {
                 port: conf.cse.mqttport,
                 protocol: "mqtts",
                 keepalive: 10,
-                clientId: 'TAS_MAV_' + nanoid(15),
+                clientId: 'TELE_MAV_' + nanoid(15),
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -305,15 +321,6 @@ function mavPortData(data) {
                     if (local_mqtt_client !== null) {
                         local_mqtt_client.publish(pub_drone_topic, mavPacket)
                     }
-                    // if (mqtt_client !== null) {
-                    //     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'))
-                    // }
-                    // if (rfPort !== null) {
-                    //     if (rfPort.isOpen) {
-                    //         rfPort.write(Buffer.from(mavPacket, 'hex'))
-                    //     }
-                    // }
-                    // send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000)
                     setTimeout(parseMavFromDrone, 0, mavPacket)
 
                     mavStrFromDrone = mavStrFromDrone.substring(mavLength)
@@ -332,15 +339,6 @@ function mavPortData(data) {
                     if (local_mqtt_client !== null) {
                         local_mqtt_client.publish(pub_drone_topic, mavPacket)
                     }
-                    // if (mqtt_client !== null) {
-                    //     mqtt_client.publish(my_cnt_name, Buffer.from(mavPacket, 'hex'))
-                    // }
-                    // if (rfPort !== null) {
-                    //     if (rfPort.isOpen) {
-                    //         rfPort.write(Buffer.from(mavPacket, 'hex'))
-                    //     }
-                    // }
-                    // send_aggr_to_Mobius(my_cnt_name, mavPacket, 2000)
                     setTimeout(parseMavFromDrone, 0, mavPacket)
 
                     mavStrFromDrone = mavStrFromDrone.substring(mavLength)
@@ -392,6 +390,8 @@ function parseMavFromDrone(mavPacket) {
             fc.global_position_int.relative_alt = Buffer.from(relative_alt, 'hex').readInt32LE(0)
 
             local_mqtt_client.publish(pub_parse_global_position_int, JSON.stringify(fc.global_position_int))
+
+
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_HEARTBEAT) { // #00 : HEARTBEAT
             var custom_mode = mavPacket.substring(base_offset, base_offset + 8).toLowerCase()
             base_offset += 8
@@ -456,9 +456,13 @@ function parseMavFromDrone(mavPacket) {
                 local_mqtt_client.publish(pub_parse_wp_yaw_behavior, JSON.stringify(fc.wp_yaw_behavior))
             }
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_SYSTEM_TIME) { // #02 : SYSTEM_TIME
-            // muv_mqtt_client.publish(muv_pub_fc_system_time_topic, mavPacket)
+            if (drone_info.mission.hasOwnProperty('msw_timesync')){
+                local_mqtt_client.publish(pub_parse_timesync, mavPacket)
+            }
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : TIMESYNC
-            // muv_mqtt_client.publish(muv_pub_fc_timesync_topic, mavPacket)
+            if (drone_info.mission.hasOwnProperty('msw_timesync')) {
+                local_mqtt_client.publish(pub_parse_system_time, mavPacket)
+            }
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_DISTANCE_SENSOR) {
             // console.log('---> ' + 'MAVLINK_MSG_ID_DISTANCE_SENSOR - ' + mavPacket);
             var time_boot_ms = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
@@ -485,16 +489,10 @@ function parseMavFromDrone(mavPacket) {
             fc.distance_sensor.id = Buffer.from(id, 'hex').readUInt8(0);
             fc.distance_sensor.orientation = Buffer.from(orientation, 'hex').readUInt8(0);
             fc.distance_sensor.covariance = Buffer.from(covariance, 'hex').readUInt8(0);
-            // console.log(fc.distance_sensor)
+
             local_mqtt_client.publish(pub_parse_distance_sensor, JSON.stringify(fc.distance_sensor))
         }
     } catch (e) {
         console.log('[parseMavFromDrone Error]', e)
     }
 }
-
-// function createMissionContainer(idx) {
-//     var mission_parent_path = mission_parent[idx]
-//     sh_adn.crtct(mission_parent_path + '?rcn=0', my_sortie_name, 0, function (rsc, res_body, count) {
-//     })
-// }

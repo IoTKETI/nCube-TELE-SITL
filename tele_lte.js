@@ -20,7 +20,9 @@ global.conf = JSON.parse(process.env.conf)
 let HTTP_SUBSCRIPTION_ENABLE = 0
 let MQTT_SUBSCRIPTION_ENABLE = 0
 
-let app = express()
+var app = express();
+
+var server = null;
 
 let sh_state = 'rtvct'
 
@@ -66,7 +68,7 @@ function local_mqtt_connect(serverip) {
                 port: conf.cse.mqttport,
                 protocol: "mqtt",
                 keepalive: 10,
-                clientId: 'TAS_MAV_' + nanoid(15),
+                clientId: 'TELE_LTE_' + nanoid(15),
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -80,7 +82,7 @@ function local_mqtt_connect(serverip) {
                 port: conf.cse.mqttport,
                 protocol: "mqtts",
                 keepalive: 10,
-                clientId: 'TAS_MAV_' + nanoid(15),
+                clientId: 'TELE_LTE_' + nanoid(15),
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -112,6 +114,7 @@ function local_mqtt_connect(serverip) {
         local_mqtt_client.on('message', function (topic, message) {
             if (topic === sub_sortie_topic) {
                 my_sortie_name = message.toString()
+                my_cnt_name = my_parent_cnt_name + '/' + my_sortie_name;
             } else if (topic === sub_drone_topic) {
                 if (mqtt_client !== null) {
                     if (my_cnt_name !== '') {
@@ -425,6 +428,16 @@ function retrieve_my_cnt_name(callback) {
             my_parent_cnt_name = info.parent;
             my_cnt_name = my_parent_cnt_name + '/' + info.name;
 
+            try {  // run default mission of lte
+                if (fs.existsSync('./msw_lte_msw_lte')) {
+                    setTimeout(git_pull, 10, 'msw_lte', 'msw_lte_msw_lte');
+                } else {
+                    setTimeout(git_clone, 10, 'msw_lte', 'msw_lte_msw_lte', 'https://github.com/IoTKETI/msw_lte.git');
+                }
+            } catch (e) {
+                console.log(e.message);
+            }
+
             // set container for mission
             info = {};
             info.parent = '/Mobius/' + drone_info.gcs;
@@ -515,6 +528,7 @@ function retrieve_my_cnt_name(callback) {
                         if (drone_info.mission[mission_name].hasOwnProperty(chk_cnt)) {
                             var repo_arr = drone_info.mission[mission_name][chk_cnt].split('/');
                             var directory_name = mission_name + '_' + repo_arr[repo_arr.length - 1].replace('.git', '');
+
                             try {
                                 if (fs.existsSync('./' + directory_name)) {
                                     setTimeout(git_pull, 10, mission_name, directory_name);
@@ -580,15 +594,7 @@ function retrieve_my_cnt_name(callback) {
             my_gimbal_parent = info.parent;
             my_gimbal_name = my_gimbal_parent + '/' + info.name;
 
-            // muv_pub_fc_gpi_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/global_position_int';
-            // muv_pub_fc_hb_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/heartbeat';
-            // muv_pub_fc_system_time_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/system_time';
-            // muv_pub_fc_timesync_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/timesync';
-            // muv_pub_fc_attitude_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/attitude';
-            // muv_pub_fc_bat_state_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/battery_status';
-            // muv_pub_fc_wp_yaw_behavior_topic = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/wp_yaw_behavior';
-            // muv_pub_fc_distance_sensor = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone + '/distance_sensor';
-
+            // set container for GCS
             var info = {};
             info.parent = '/Mobius/' + drone_info.gcs;
             info.name = 'GCS_Data';
@@ -744,7 +750,7 @@ function mqtt_connect(serverip) {
                 port: conf.cse.mqttport,
                 protocol: "mqtt",
                 keepalive: 10,
-                clientId: 'TAS_MAV_' + nanoid(15),
+                clientId: 'TELE_LTE_' + nanoid(15),
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
@@ -758,7 +764,7 @@ function mqtt_connect(serverip) {
                 port: conf.cse.mqttport,
                 protocol: "mqtts",
                 keepalive: 10,
-                clientId: 'TAS_MAV_' + nanoid(15),
+                clientId: 'TELE_LTE_' + nanoid(15),
                 protocolId: "MQTT",
                 protocolVersion: 4,
                 clean: true,
