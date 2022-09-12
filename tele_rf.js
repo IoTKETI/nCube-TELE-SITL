@@ -71,7 +71,23 @@ function init() {
             }
         }
     }
-    setTimeout(rfPortOpening, parseInt(Math.random() * 5));
+    exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout) => {
+        if (error) {  // Windows
+            console.log('OS is Windows')
+            rfPortNum = 'COM2'
+            rfBaudrate = '115200'
+        }
+        if (stdout === "raspbian\n") {  // CROW
+            console.log('OS is Raspberry Pi')
+            rfPortNum = '/dev/ttyAMA1'
+            rfBaudrate = '115200'
+        } else if (stdout === "ubuntu\n") {  // KEA
+            console.log('OS is Ubuntu')
+            rfPortNum = '/dev/ttyTCU0'
+            rfBaudrate = '115200'
+        }
+        rfPortOpening()
+    })
 }
 
 function npm_install(mission_name, directory_name) {

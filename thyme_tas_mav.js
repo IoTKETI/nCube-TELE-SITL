@@ -40,8 +40,8 @@ function tas_ready() {
     exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout) => {
         if (error) {  // Windows
             console.log('OS is Windows')
-            mavPortNum = 'COM13'
-            mavBaudrate = '57600'
+            mavPortNum = 'COM4'
+            mavBaudrate = '115200'
         }
         if (stdout === "raspbian\n") {  // CROW
             console.log('OS is Raspberry Pi')
@@ -126,6 +126,7 @@ function gcs_noti_handler(message) {
         console.log('============================================================')
     } else {
         if (mavPort !== null) {
+            // console.log(Buffer.from(message, 'hex'))
             if (mavPort.isOpen) {
                 mavPort.write(Buffer.from(message, 'hex'))
             }
@@ -456,13 +457,9 @@ function parseMavFromDrone(mavPacket) {
                 local_mqtt_client.publish(pub_parse_wp_yaw_behavior, JSON.stringify(fc.wp_yaw_behavior))
             }
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_SYSTEM_TIME) { // #02 : SYSTEM_TIME
-            if (drone_info.mission.hasOwnProperty('msw_timesync')){
-                local_mqtt_client.publish(pub_parse_timesync, mavPacket)
-            }
+            // local_mqtt_client.publish(pub_parse_timesync, mavPacket)
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_TIMESYNC) { // #111 : TIMESYNC
-            if (drone_info.mission.hasOwnProperty('msw_timesync')) {
-                local_mqtt_client.publish(pub_parse_system_time, mavPacket)
-            }
+            // local_mqtt_client.publish(pub_parse_system_time, mavPacket)
         } else if (msg_id === mavlink.MAVLINK_MSG_ID_DISTANCE_SENSOR) {
             // console.log('---> ' + 'MAVLINK_MSG_ID_DISTANCE_SENSOR - ' + mavPacket);
             var time_boot_ms = mavPacket.substring(base_offset, base_offset + 8).toLowerCase();
