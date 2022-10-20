@@ -92,7 +92,7 @@ function gcs_noti_handler(message) {
         control.target_system = Buffer.from(target_system, 'hex').readUInt8(0);
         control.target_component = Buffer.from(target_component, 'hex').readUInt8(0);
         control.confirmation = Buffer.from(confirmation, 'hex').readUInt8(0);
-        if (command === 248) {
+        if (command === '248') {
             let control_channels = {}
             control_channels.channel = control.param1
             control_channels.value = control.param2
