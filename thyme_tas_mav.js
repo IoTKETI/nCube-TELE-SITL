@@ -92,25 +92,38 @@ function gcs_noti_handler(message) {
         control.target_system = Buffer.from(target_system, 'hex').readUInt8(0);
         control.target_component = Buffer.from(target_component, 'hex').readUInt8(0);
         control.confirmation = Buffer.from(confirmation, 'hex').readUInt8(0);
+        if (command === 248) {
+            let control_channels = {}
+            control_channels.channel = control.param1
+            control_channels.value = control.param2
 
-        let control_channels = {}
-        control_channels.channel = control.param1
-        control_channels.value = control.param2
-
-        local_mqtt_client.publish('/Control', JSON.stringify(control_channels))
-        console.log('============================================================')
-        console.log('target_system - ' + control.target_system)
-        console.log('target_component - ' + control.target_component)
-        console.log('command - ' + control.command)
-        console.log('confirmation - ' + control.confirmation)
-        console.log('param1 - ' + control.param1)
-        console.log('param2 - ' + control.param2)
-        console.log('param3 - ' + control.param3)
-        console.log('param4 - ' + control.param4)
-        console.log('param5 - ' + control.param5)
-        console.log('param6 - ' + control.param6)
-        console.log('param7 - ' + control.param7)
-        console.log('============================================================')
+            local_mqtt_client.publish('/Control', JSON.stringify(control_channels))
+            console.log('============================================================')
+            console.log('target_system - ' + control.target_system)
+            console.log('target_component - ' + control.target_component)
+            console.log('command - ' + control.command)
+            console.log('confirmation - ' + control.confirmation)
+            console.log('param1 - ' + control.param1)
+            console.log('param2 - ' + control.param2)
+            console.log('param3 - ' + control.param3)
+            console.log('param4 - ' + control.param4)
+            console.log('param5 - ' + control.param5)
+            console.log('param6 - ' + control.param6)
+            console.log('param7 - ' + control.param7)
+            console.log('============================================================')
+        } else {
+            if (sitlUDP2 != null) {
+                sitlUDP2.send(message, 0, message.length, PORT2, HOST,
+                    function (err) {
+                        if (err) {
+                            console.log('UDP message send error', err);
+                            return;
+                        }
+                    }
+                );
+            } else {
+            }
+        }
     } else {
         if (sitlUDP2 != null) {
             sitlUDP2.send(message, 0, message.length, PORT2, HOST,
@@ -122,7 +135,6 @@ function gcs_noti_handler(message) {
                 }
             );
         } else {
-
         }
     }
 }
