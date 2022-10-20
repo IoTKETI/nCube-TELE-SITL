@@ -116,7 +116,7 @@ function gcs_noti_handler(message) {
             console.log('============================================================')
         } else {
             if (sitlUDP2 != null) {
-                sitlUDP2.send(Buffer.from(message, 'hex'), 0, message.length, PORT2, HOST,
+                sitlUDP2.send(Buffer.from(message, 'hex'), 0, Buffer.from(message, 'hex').length, PORT2, HOST,
                     function (err) {
                         if (err) {
                             console.log('UDP message send error', err);
@@ -130,7 +130,7 @@ function gcs_noti_handler(message) {
         }
     } else {
         if (sitlUDP2 != null) {
-            sitlUDP2.send(Buffer.from(message, 'hex'), 0, message.length, PORT2, HOST,
+            sitlUDP2.send(Buffer.from(message, 'hex'), 0, Buffer.from(message, 'hex').length, PORT2, HOST,
                 function (err) {
                     if (err) {
                         console.log('UDP message send error', err);
