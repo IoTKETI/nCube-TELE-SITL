@@ -411,33 +411,6 @@ function retrieve_my_cnt_name(callback) {
 
             console.log("gcs host is " + conf.cse.host);
 
-            var info = {};
-            info.parent = '/Mobius/' + drone_info.gcs;
-            info.name = 'Drone_Data';
-            conf.cnt.push(JSON.parse(JSON.stringify(info)));
-
-            info = {};
-            info.parent = '/Mobius/' + drone_info.gcs + '/Drone_Data';
-            info.name = drone_info.drone;
-            conf.cnt.push(JSON.parse(JSON.stringify(info)));
-
-            info.parent = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone;
-            info.name = my_sortie_name;
-            conf.cnt.push(JSON.parse(JSON.stringify(info)));
-
-            my_parent_cnt_name = info.parent;
-            my_cnt_name = my_parent_cnt_name + '/' + info.name;
-
-            try {  // run default mission of lte
-                if (fs.existsSync('./msw_lte_msw_lte')) {
-                    setTimeout(git_pull, 10, 'msw_lte', 'msw_lte_msw_lte');
-                } else {
-                    setTimeout(git_clone, 10, 'msw_lte', 'msw_lte_msw_lte', 'https://github.com/IoTKETI/msw_lte.git');
-                }
-            } catch (e) {
-                console.log(e.message);
-            }
-
             // set container for mission
             info = {};
             info.parent = '/Mobius/' + drone_info.gcs;
