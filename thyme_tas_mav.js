@@ -95,7 +95,7 @@ function gcs_noti_handler(message) {
         control.target_component = Buffer.from(target_component, 'hex').readUInt8(0);
         control.confirmation = Buffer.from(confirmation, 'hex').readUInt8(0);
 
-        if (control.command === 248) {
+        if (control.command === '248') {
             let control_channels = {}
             control_channels.channel = control.param1
             control_channels.value = control.param2
@@ -116,7 +116,7 @@ function gcs_noti_handler(message) {
             console.log('============================================================')
         } else {
             if (sitlUDP2 != null) {
-                sitlUDP2.send(message, 0, message.length, PORT2, HOST,
+                sitlUDP2.send(Buffer.from(message, 'hex'), 0, message.length, PORT2, HOST,
                     function (err) {
                         if (err) {
                             console.log('UDP message send error', err);
@@ -130,7 +130,7 @@ function gcs_noti_handler(message) {
         }
     } else {
         if (sitlUDP2 != null) {
-            sitlUDP2.send(message, 0, message.length, PORT2, HOST,
+            sitlUDP2.send(Buffer.from(message, 'hex'), 0, message.length, PORT2, HOST,
                 function (err) {
                     if (err) {
                         console.log('UDP message send error', err);
