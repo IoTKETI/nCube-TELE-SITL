@@ -411,6 +411,23 @@ function retrieve_my_cnt_name(callback) {
 
             console.log("gcs host is " + conf.cse.host);
 
+            var info = {};
+            info.parent = '/Mobius/' + drone_info.gcs;
+            info.name = 'Drone_Data';
+            conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+            info = {};
+            info.parent = '/Mobius/' + drone_info.gcs + '/Drone_Data';
+            info.name = drone_info.drone;
+            conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+            info.parent = '/Mobius/' + drone_info.gcs + '/Drone_Data/' + drone_info.drone;
+            info.name = my_sortie_name;
+            conf.cnt.push(JSON.parse(JSON.stringify(info)));
+
+            my_parent_cnt_name = info.parent;
+            my_cnt_name = my_parent_cnt_name + '/' + info.name;
+
             // set container for mission
             info = {};
             info.parent = '/Mobius/' + drone_info.gcs;
