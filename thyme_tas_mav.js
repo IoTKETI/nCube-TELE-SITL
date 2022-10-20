@@ -13,10 +13,6 @@ const mavlink = require('./mavlibrary/mavlink.js')
 
 let conf = JSON.parse(process.env.conf)
 
-let mavPort = null
-let mavPortNum = '/dev/ttyAMA0'
-let mavBaudrate = '115200'
-
 let local_mqtt_client = null
 let sub_gcs_rf_topic = '/TELE/gcs/rf'
 let sub_gcs_lte_topic = '/TELE/gcs/lte'
@@ -44,23 +40,7 @@ tas_ready()
 
 function tas_ready() {
     local_mqtt_connect('localhost')
-    exec("cat /etc/*release* | grep -w ID | cut -d '=' -f 2", (error, stdout) => {
-        if (error) {  // Windows
-            console.log('OS is Windows')
-            mavPortNum = 'COM4'
-            mavBaudrate = '115200'
-        }
-        if (stdout === "raspbian\n") {  // CROW
-            console.log('OS is Raspberry Pi')
-            mavPortNum = '/dev/ttyAMA0'
-            mavBaudrate = '115200'
-        } else if (stdout === "ubuntu\n") {  // KEA
-            console.log('OS is Ubuntu')
-            mavPortNum = '/dev/ttyTHS0'
-            mavBaudrate = '115200'
-        }
-        mavPortOpening()
-    })
+    mavPortOpening()
 }
 
 let control = {};
