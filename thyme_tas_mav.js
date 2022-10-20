@@ -125,6 +125,7 @@ function gcs_noti_handler(message) {
                     }
                 );
             } else {
+                console.log('send cmd via sitlUDP2')
             }
         }
     } else {
