@@ -36,6 +36,8 @@ let PORT2 = 14556; // input : GCS --> SITL
 global.sitlUDP = null;
 global.sitlUDP2 = null;
 
+sitlUDP2 = dgram.createSocket('udp4');
+
 tas_ready()
 
 function tas_ready() {
