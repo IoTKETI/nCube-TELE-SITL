@@ -5,7 +5,7 @@
 const moment = require('moment')
 const fs = require('fs')
 const {exec} = require('child_process')
-const {SerialPort} = require('serialport')
+const dgram = require("dgram");
 const mqtt = require("mqtt")
 const {nanoid} = require("nanoid")
 
@@ -32,6 +32,13 @@ let pub_parse_system_time = '/TELE/drone/system_time'
 let my_sortie_name = 'disarm'
 
 let GCSData = {}
+
+let HOST = '127.0.0.1';
+let PORT1 = 14550; // output: SITL --> GCS
+let PORT2 = 14552; // input : GCS --> SITL
+
+global.sitlUDP = null;
+global.sitlUDP2 = null;
 
 tas_ready()
 
@@ -125,11 +132,17 @@ function gcs_noti_handler(message) {
         console.log('param7 - ' + control.param7)
         console.log('============================================================')
     } else {
-        if (mavPort !== null) {
-            // console.log(Buffer.from(message, 'hex'))
-            if (mavPort.isOpen) {
-                mavPort.write(Buffer.from(message, 'hex'))
-            }
+        if (sitlUDP2 != null) {
+            sitlUDP2.send(message, 0, message.length, PORT2, HOST,
+                function (err) {
+                    if (err) {
+                        console.log('UDP message send error', err);
+                        return;
+                    }
+                }
+            );
+        } else {
+
         }
     }
 }
@@ -224,25 +237,19 @@ function local_mqtt_connect(serverip) {
 }
 
 function mavPortOpening() {
-    if (mavPort === null) {
-        mavPort = new SerialPort({
-            path: mavPortNum,
-            baudRate: parseInt(mavBaudrate, 10),
-        })
-        mavPort.on('open', mavPortOpen)
-        mavPort.on('close', mavPortClose)
-        mavPort.on('error', mavPortError)
-        mavPort.on('data', mavPortData)
-    } else {
-        if (mavPort.isOpen) {
-        } else {
-            mavPort.open()
-        }
+    if (sitlUDP === null) {
+        sitlUDP = dgram.createSocket('udp4');
+        sitlUDP.bind(PORT1, HOST);
+
+        sitlUDP.on('listening', mavPortOpen);
+        sitlUDP.on('message', mavPortData);
+        sitlUDP.on('close', mavPortClose);
+        sitlUDP.on('error', mavPortError);
     }
 }
 
 function mavPortOpen() {
-    console.log('mavPort(' + mavPort.path + '), mavPort rate: ' + mavPort.baudRate + ' open.')
+    console.log('UDP socket connect to ' + sitlUDP.address().address + ':' + sitlUDP.address().port);
 }
 
 function mavPortClose() {

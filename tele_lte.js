@@ -120,7 +120,7 @@ function local_mqtt_connect(serverip) {
                     if (my_cnt_name !== '') {
                         // console.log(message.toString())
                         mqtt_client.publish(my_cnt_name, Buffer.from(message.toString(), 'hex'))
-                        send_aggr_to_Mobius(my_cnt_name, message.toString(), 2000)
+                        // send_aggr_to_Mobius(my_cnt_name, message.toString(), 2000)
                     }
                 }
             }
