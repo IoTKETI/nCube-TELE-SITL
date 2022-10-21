@@ -15,9 +15,9 @@ let conf = JSON.parse(process.env.conf)
 
 let local_mqtt_client = null
 let sub_gcs_rf_topic = '/TELE/gcs/rf'
-let sub_gcs_lte_topic = '/TELE/gcs/lte'
-let pub_drone_topic = '/TELE/drone'
-let pub_sortie_topic = '/TELE/sorite'
+let sub_gcs_lte_topic = '/TELE/gcs/lte1'
+let pub_drone_topic = '/TELE/drone1'
+let pub_sortie_topic = '/TELE/sorite1'
 let pub_parse_global_position_int = '/TELE/drone/gpi'
 let pub_parse_heartbeat = '/TELE/drone/hb'
 let pub_parse_wp_yaw_behavior = '/TELE/drone/wp_yaw_behavior'
