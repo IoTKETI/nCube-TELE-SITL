@@ -30,8 +30,8 @@ let my_sortie_name = 'disarm'
 let GCSData = {}
 
 let HOST = '127.0.0.1';
-let PORT1 = 14555; // output: SITL --> GCS
-let PORT2 = 14556; // input : GCS --> SITL
+let PORT1 = 14565; // output: SITL --> GCS
+let PORT2 = 14566; // input : GCS --> SITL
 
 global.sitlUDP = null;
 global.sitlUDP2 = null;
