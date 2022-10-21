@@ -416,7 +416,7 @@ function parseMavFromDrone(mavPacket) {
             fc.heartbeat.custom_mode = Buffer.from(custom_mode, 'hex').readUInt32LE(0)
             fc.heartbeat.system_status = Buffer.from(system_status, 'hex').readUInt8(0)
             fc.heartbeat.mavlink_version = Buffer.from(mavlink_version, 'hex').readUInt8(0)
-
+            console.log(fc.heartbeat.base_mode)
             local_mqtt_client.publish(pub_parse_heartbeat, JSON.stringify(fc.heartbeat))
 
             if (fc.heartbeat.base_mode & 0x80) {
