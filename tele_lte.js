@@ -782,8 +782,8 @@ function mqtt_connect(serverip) {
             if (topic === my_command_name) {
                 if (local_mqtt_client !== null) {
                     local_mqtt_client.publish(pub_gcs_topic, message)
-                    sh_adn.crtci(my_command_name + '?rcn=0', 0, message.toString('hex'), null, function () {
-                    })
+                    // sh_adn.crtci(my_command_name + '?rcn=0', 0, message.toString('hex'), null, function () {
+                    // })
                 }
             }
         })
