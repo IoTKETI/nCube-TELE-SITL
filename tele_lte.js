@@ -31,9 +31,9 @@ const normal_interval = 100;
 
 let local_mqtt_client = null
 
-let pub_gcs_topic = '/TELE/gcs/lte1'
-let sub_drone_topic = '/TELE/drone1'
-let sub_sortie_topic = '/TELE/sorite1'
+let pub_gcs_topic = '/TELE/gcs/lte'
+let sub_drone_topic = '/TELE/drone'
+let sub_sortie_topic = '/TELE/sorite'
 
 let mqtt_client = null
 var noti_topic = '';

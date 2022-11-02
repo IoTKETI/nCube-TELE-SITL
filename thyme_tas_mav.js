@@ -15,9 +15,9 @@ let conf = JSON.parse(process.env.conf)
 
 let local_mqtt_client = null
 let sub_gcs_rf_topic = '/TELE/gcs/rf'
-let sub_gcs_lte_topic = '/TELE/gcs/lte1'
-let pub_drone_topic = '/TELE/drone1'
-let pub_sortie_topic = '/TELE/sorite1'
+let sub_gcs_lte_topic = '/TELE/gcs/lte'
+let pub_drone_topic = '/TELE/drone'
+let pub_sortie_topic = '/TELE/sorite'
 let pub_parse_global_position_int = '/TELE/drone/gpi'
 let pub_parse_heartbeat = '/TELE/drone/hb'
 let pub_parse_wp_yaw_behavior = '/TELE/drone/wp_yaw_behavior'
@@ -416,7 +416,7 @@ function parseMavFromDrone(mavPacket) {
             fc.heartbeat.custom_mode = Buffer.from(custom_mode, 'hex').readUInt32LE(0)
             fc.heartbeat.system_status = Buffer.from(system_status, 'hex').readUInt8(0)
             fc.heartbeat.mavlink_version = Buffer.from(mavlink_version, 'hex').readUInt8(0)
-            console.log(fc.heartbeat.base_mode)
+
             local_mqtt_client.publish(pub_parse_heartbeat, JSON.stringify(fc.heartbeat))
 
             if (fc.heartbeat.base_mode & 0x80) {
